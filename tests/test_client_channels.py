@@ -1,43 +1,38 @@
-import pydle
-from .fixtures import with_client
+def test_client_same_channel(client_fx):
+    assert client_fx.is_same_channel('#lobby', '#lobby')
+    assert not client_fx.is_same_channel('#lobby', '#support')
+    assert not client_fx.is_same_channel('#lobby', 'jilles')
 
 
-@with_client()
-def test_client_same_channel(server, client):
-    assert client.is_same_channel('#lobby', '#lobby')
-    assert not client.is_same_channel('#lobby', '#support')
-    assert not client.is_same_channel('#lobby', 'jilles')
+def test_client_in_channel(client_fx):
+    client_fx._create_channel('#lobby')
+    assert client_fx.in_channel('#lobby')
 
-@with_client()
-def test_client_in_channel(server, client):
-    client._create_channel('#lobby')
-    assert client.in_channel('#lobby')
 
-@with_client()
-def test_client_is_channel(server, client):
+def test_client_is_channel(client_fx):
     # Test always true...
-    assert client.is_channel('#lobby')
-    assert client.is_channel('WiZ')
-    assert client.is_channel('irc.fbi.gov')
+    assert client_fx.is_channel('#lobby')
+    assert client_fx.is_channel('WiZ')
+    assert client_fx.is_channel('irc.fbi.gov')
 
-@with_client()
-def test_channel_creation(server, client):
-    client._create_channel('#pydle')
-    assert '#pydle' in client.channels
-    assert client.channels['#pydle']['users'] == set()
 
-@with_client()
-def test_channel_destruction(server, client):
-    client._create_channel('#pydle')
-    client._destroy_channel('#pydle')
-    assert '#pydle' not in client.channels
+def test_channel_creation(client_fx):
+    client_fx._create_channel('#pydle')
+    assert '#pydle' in client_fx.channels
+    assert client_fx.channels['#pydle']['users'] == set()
 
-@with_client()
-def test_channel_user_destruction(server, client):
-    client._create_channel('#pydle')
-    client._create_user('WiZ')
-    client.channels['#pydle']['users'].add('WiZ')
 
-    client._destroy_channel('#pydle')
-    assert '#pydle' not in client.channels
-    assert 'WiZ' not in client.users
+def test_channel_destruction(client_fx):
+    client_fx._create_channel('#pydle')
+    client_fx._destroy_channel('#pydle')
+    assert '#pydle' not in client_fx.channels
+
+
+def test_channel_user_destruction(client_fx):
+    client_fx._create_channel('#pydle')
+    client_fx._create_user('WiZ')
+    client_fx.channels['#pydle']['users'].add('WiZ')
+
+    client_fx._destroy_channel('#pydle')
+    assert '#pydle' not in client_fx.channels
+    assert 'WiZ' not in client_fx.users
