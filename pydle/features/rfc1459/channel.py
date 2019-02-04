@@ -10,6 +10,7 @@ Licensed under the BSD 3-Clause License.
 
 See LICENSE.md
 """
+from datetime import datetime
 from typing import Set, List
 
 from pydle.channel import Channel
@@ -27,9 +28,9 @@ class RfcChannel(Channel):
                  modes: List[str] = None,
                  topic: str = None,
                  topic_by: str = None,
-                 created=None,
+                 created: datetime = None,
                  password: str = None,
-                 banlist: List = None,
+                 ban_list: List = None,
                  public: bool = None
                  ):
         self.modes = modes if modes else set()
@@ -37,7 +38,7 @@ class RfcChannel(Channel):
         self.topic_by = topic_by
         self.created = created
         self.password = password
-        self.ban_list = banlist
+        self.ban_list = ban_list
         self.public = public
 
         super().__init__(title, users)
