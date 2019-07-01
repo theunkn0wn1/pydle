@@ -36,7 +36,7 @@ class CTCPSupport(rfc1459.RFC1459Support):
         import pydle
 
         version = '{name} v{ver}'.format(name=pydle.__name__, ver=pydle.__version__)
-        self.ctcp_reply(by, 'VERSION', version)
+        await self.ctcp_reply(by, 'VERSION', version)
 
 
     ## IRC API.
@@ -64,7 +64,7 @@ class CTCPSupport(rfc1459.RFC1459Support):
         target, msg = message.params
 
         if is_ctcp(msg):
-            self._sync_user(nick, metadata)
+            await self._sync_user(nick, metadata)
             type, contents = parse_ctcp(msg)
 
             # Find dedicated handler if it exists.
@@ -83,7 +83,7 @@ class CTCPSupport(rfc1459.RFC1459Support):
         target, msg = message.params
 
         if is_ctcp(msg):
-            self._sync_user(nick, metadata)
+            await self._sync_user(nick, metadata)
             type, response = parse_ctcp(msg)
 
             # Find dedicated handler if it exists.

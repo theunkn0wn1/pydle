@@ -78,7 +78,7 @@ class MonitoringSupport(cap.CapabilityNegotiationSupport):
     async def on_raw_730(self, message):
         """ Someone we are monitoring just came online. """
         for nick in message.params[1].split(','):
-            self._create_user(nick)
+            await self._create_user(nick)
             await self.on_user_online(nickname)
 
     async def on_raw_731(self, message):
