@@ -604,6 +604,15 @@ class RFC1459Support(BasicClient):
 
             await self.on_kick(channel, target, kicker, reason)
 
+    async def on_raw_pong(self, message):
+        """raw PONG response"""
+        # nothing specific needs to be done, call the public handler
+        await self.on_pong(message)
+
+    async def on_pong(self, message):
+        """called when the client receives a PONG reply"""
+        pass
+
     async def on_raw_kill(self, message):
         """ KILL command. """
         by, bymeta = self._parse_user(message.source)
