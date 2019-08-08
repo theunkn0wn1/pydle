@@ -159,15 +159,21 @@ class BasicClient:
         else:
             return 0
 
-    async def _perform_ping_timeout(self, delay: int):
+    async def _perform_ping_timeout(self, delay, pause=5):
         """ Handle timeout gracefully.
 
         Args:
             delay (int): delay before raising the timeout (in seconds)
+            pause(int): grace period to give the server time to respond to our pin
         """
 
         # pause for delay seconds
-        await sleep(delay)
+        await sleep(delay-pause)
+        # send the server a ping, to check if its still there
+        await self.rawmsg("PING\r\n")
+        # give the server some time to respond
+        await asyncio.sleep(pause)
+        # server never got back to us, its probably gone.
         # then continue
         error = TimeoutError(
             'Ping timeout: no data received from server in {timeout} seconds.'.format(
