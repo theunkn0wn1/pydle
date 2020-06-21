@@ -3,16 +3,22 @@
 import collections.abc
 import pydle.protocol
 from . import protocol
+import attr
+import typing
 
+@attr.s
 class RFC1459Message(pydle.protocol.Message):
-    def __init__(self, command, params, source=None, _raw=None, _valid=True, **kw):
-        self._kw = kw
-        self._kw['command'] = command
-        self._kw['params'] = params
-        self._kw['source'] = source
-        self._valid = _valid
-        self._raw = _raw
-        self.__dict__.update(self._kw)
+    command = attr.ib(type=str, )
+    """ parsed command """
+    params = attr.ib(type=typing.List[str])
+    """ command parameters """
+    source = attr.ib(type=typing.Optional[str], default=None)
+    """ original message """
+    valid = attr.ib(type=bool, default=True)
+    """ strictly well-formed message """
+    raw = attr.ib(type=typing.Optional[bytes], default=None)
+    """ raw message """
+
 
     @classmethod
     def parse(cls, line, encoding=pydle.protocol.DEFAULT_ENCODING):
@@ -92,7 +98,7 @@ class RFC1459Message(pydle.protocol.Message):
             command = command.upper()
 
         # Return parsed message.
-        return RFC1459Message(command, params, source=source, _valid=valid, _raw=message)
+        return RFC1459Message(command, params, source=source, valid=valid, raw=message)
 
     def construct(self, force=False):
         """ Construct a raw IRC message. """

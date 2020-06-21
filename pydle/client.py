@@ -399,10 +399,10 @@ class BasicClient:
 
     async def on_raw(self, message):
         """ Handle a single message. """
-        self.logger.debug('<< %s', message._raw)
-        if not message._valid:
+        self.logger.debug('<< %s', message.raw)
+        if not message.valid:
             self.logger.warning('Encountered strictly invalid IRC message from server: %s',
-                                message._raw)
+                                message.raw)
 
         if isinstance(message.command, int):
             cmd = str(message.command).zfill(3)

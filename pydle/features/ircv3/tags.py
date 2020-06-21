@@ -4,7 +4,8 @@ import pydle.client
 import pydle.protocol
 from pydle.features import rfc1459
 import re
-
+import attr
+import typing
 TAG_INDICATOR = '@'
 TAG_SEPARATOR = ';'
 TAG_VALUE_SEPARATOR = '='
@@ -18,13 +19,10 @@ TAG_CONVERSIONS = {
     r"\n": '\n'
 }
 
-
+@attr.s
 class TaggedMessage(rfc1459.RFC1459Message):
 
-    def __init__(self, tags=None, **kw):
-        super().__init__(**kw)
-        self._kw['tags'] = tags
-        self.__dict__.update(self._kw)
+    tags = attr.ib(type=typing.Optional[typing.Dict[str, typing.Any]], default=None)
 
     @classmethod
     def parse(cls, line, encoding=pydle.protocol.DEFAULT_ENCODING):
@@ -81,7 +79,11 @@ class TaggedMessage(rfc1459.RFC1459Message):
 
         # Parse rest of message.
         message = super().parse(message.lstrip().encode(encoding), encoding=encoding)
-        return TaggedMessage(_raw=raw, _valid=message._valid and valid, tags=tags, **message._kw)
+        _kw = attr.asdict(message)
+        del _kw['valid']
+        del _kw['raw']
+
+        return TaggedMessage(raw=raw, valid=message.valid and valid, tags=tags, **_kw)
 
     def construct(self, force=False):
         """
@@ -110,8 +112,7 @@ class TaggedMessage(rfc1459.RFC1459Message):
 
 class TaggedMessageSupport(rfc1459.RFC1459Support):
     def _create_message(self, command, *params, tags=None, **kwargs):
-        message = super()._create_message(command, *params, **kwargs)
-        return TaggedMessage(tags=tags or {}, **message._kw)
+        return TaggedMessage(params=params, command=command,  tags=tags or {},**kwargs)
 
     def _parse_message(self):
         sep = rfc1459.protocol.MINIMAL_LINE_SEPARATOR.encode(self.encoding)
