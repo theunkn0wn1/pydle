@@ -16,8 +16,8 @@ class IRCv3_1Support(sasl.SASLSupport, cap.CapabilityNegotiationSupport, account
         # If the server supports account-notify, we will be told about the registration status changing.
         # As such, we can skip the song and dance pydle.features.account does.
         if self._capabilities.get('account-notify', False):
-            account = self.users.get(user, {}).get('account', None)
-            identified = self.users.get(user, {}).get('identified', False)
+            account = self.users.get(user, {}).account
+            identified = self.users.get(user, {}).identified
 
         super()._rename_user(user, new)
 
@@ -93,7 +93,7 @@ class IRCv3_1Support(sasl.SASLSupport, cap.CapabilityNegotiationSupport, account
 
             if account == NO_ACCOUNT:
                 account = None
-            self.users[nick]['account'] = account
-            self.users[nick]['realname'] = realname
+            self.users[nick].account= account
+            self.users[nick].realname = realname
         else:
             await super().on_raw_join(message)

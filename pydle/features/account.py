@@ -2,18 +2,32 @@
 # Account system support.
 from pydle.features import rfc1459
 import asyncio
+from typing import Optional
+import attr
+from pydle.user import User
+
+
+@attr.s
+class AccountUser(User):
+    account = attr.ib(type=Optional[str], default=None)
+    identified = attr.ib(type=bool, default=False)
+
 
 class AccountSupport(rfc1459.RFC1459Support):
 
     ## Internal.
 
+    @classmethod
+    def _get_user_subclasses(cls):
+        bases = super()._get_user_subclasses()
+        bases.extend([AccountUser])
+        return bases
+
     def _create_user(self, nickname):
         super()._create_user(nickname)
         if nickname in self.users:
-            self.users[nickname].update({
-                'account': None,
-                'identified': False
-            })
+            self.users[nickname].account = None
+            self.users[nickname].identified = False
 
     def _rename_user(self, user, new):
         super()._rename_user(user, new)

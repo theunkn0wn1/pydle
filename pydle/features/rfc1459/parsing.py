@@ -5,6 +5,7 @@ import pydle.protocol
 from . import protocol
 import attr
 import typing
+from .user import RFC1459User
 
 @attr.s
 class RFC1459Message(pydle.protocol.Message):

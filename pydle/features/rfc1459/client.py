@@ -7,7 +7,7 @@ import itertools
 
 from pydle.client import BasicClient, NotInChannel, AlreadyInChannel
 from . import parsing, protocol
-
+from .user import RFC1459User
 
 class RFC1459Support(BasicClient):
     """ Basic RFC1459 client. """
@@ -76,13 +76,17 @@ class RFC1459Support(BasicClient):
             'public': True
         })
 
+    @classmethod
+    def _get_user_subclasses(cls):
+        bases = super()._get_user_subclasses()
+        bases.extend([RFC1459User])
+        return bases
+
     def _create_user(self, nickname):
         super()._create_user(nickname)
         if nickname in self.users:
-            self.users[nickname].update({
-                'away': False,
-                'away_message': None,
-            })
+            self.users[nickname].away = False
+            self.users[nickname].away_message = None
 
     def _rename_user(self, user, new):
         super()._rename_user(user, new)

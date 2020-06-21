@@ -5,7 +5,9 @@ import logging
 from asyncio import new_event_loop, gather, get_event_loop, sleep
 
 from . import connection, protocol
+from .user import User
 import warnings
+import attr
 
 __all__ = ['Error', 'AlreadyInChannel', 'NotInChannel', 'BasicClient', 'ClientPool']
 DEFAULT_NICKNAME = '<unregistered>'
@@ -38,6 +40,7 @@ class BasicClient:
     RECONNECT_MAX_ATTEMPTS = 3
     RECONNECT_DELAYED = True
     RECONNECT_DELAYS = [5, 5, 10, 30, 120, 600]
+
 
     @property
     def PING_TIMEOUT(self):
@@ -185,17 +188,26 @@ class BasicClient:
             self._destroy_user(user, channel)
         del self.channels[channel]
 
+    @classmethod
+    def _get_user_subclasses(cls):
+        return [User]
+
+    @classmethod
+    def get_user_type(cls):
+        bases = cls._get_user_subclasses()
+        # if we have more than one base, remove the User base class to prevent MRO headaches.
+        # All other User bases should already inherit User.00
+        if len(bases) > 1:
+            del bases[0]
+        bases = tuple(bases)
+        return attr.make_class("PydleUser", bases=bases, attrs=())
+
     def _create_user(self, nickname):
         # Servers are NOT users.
         if not nickname or '.' in nickname:
             return
 
-        self.users[nickname] = {
-            'nickname': nickname,
-            'username': None,
-            'realname': None,
-            'hostname': None
-        }
+        self.users[nickname] = self.get_user_type()(nickname=nickname)
 
     def _sync_user(self, nick, metadata):
         # Create user in database.
@@ -203,12 +215,13 @@ class BasicClient:
             self._create_user(nick)
             if nick not in self.users:
                 return
-        self.users[nick].update(metadata)
+        for attr, value in metadata.items():
+            setattr(self.users[nick], attr, value)
 
     def _rename_user(self, user, new):
         if user in self.users:
             self.users[new] = self.users[user]
-            self.users[new]['nickname'] = new
+            self.users[new].nickname = new
             del self.users[user]
         else:
             self._create_user(new)
@@ -241,9 +254,10 @@ class BasicClient:
         raise NotImplementedError()
 
     def _format_user_mask(self, nickname):
-        user = self.users.get(nickname, {"nickname": nickname, "username": "*", "hostname": "*"})
-        return self._format_host_mask(user['nickname'], user['username'] or '*',
-                                      user['hostname'] or '*')
+        user = self.users.get(nickname, None)
+        return self._format_host_mask(user.nickname if user else nickname,
+                                      user.username if user else '*',
+                                      user.hostname if user else '*')
 
     def _format_host_mask(self, nick, user, host):
         return '{n}!{u}@{h}'.format(n=nick, u=user, h=host)
