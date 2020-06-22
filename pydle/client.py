@@ -215,8 +215,8 @@ class BasicClient:
             self._create_user(nick)
             if nick not in self.users:
                 return
-        for attr, value in metadata.items():
-            setattr(self.users[nick], attr, value)
+        for name, value in metadata.items():
+            setattr(self.users[nick], name, value)
 
     def _rename_user(self, user, new):
         if user in self.users:
